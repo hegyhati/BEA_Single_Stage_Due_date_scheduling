@@ -26,10 +26,10 @@ Problem::Problem(std::string filename){
 
 Problem::~Problem(){
   if (nJobs){
-    delete deadline;
+    delete [] deadline;
     for (int j=0; j<nJobs; j++)
-      delete procTime[j];
-    delete procTime;
+      delete [] procTime[j];
+    delete [] procTime;
   }
 }
 
