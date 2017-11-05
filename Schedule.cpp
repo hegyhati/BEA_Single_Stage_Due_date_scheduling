@@ -23,6 +23,12 @@ Schedule::Schedule(const Problem& problem):problem(problem){
   }
 }
 
+Schedule::Schedule(const Schedule& other) : problem(other.problem){
+  priorities = new double[problem.getJobCount()];
+  for (int j=0; j<problem.getJobCount(); j++) 
+    priorities[j]=other.priorities[j];
+}
+
 Schedule::~Schedule(){ delete [] priorities; }
 
 double Schedule::getTotalLateness() const {
@@ -81,3 +87,15 @@ void Schedule::mutate() {
 }
 
 double Schedule::getPriority(int job) const {return priorities[job%problem.getJobCount()];}
+
+
+Schedule Schedule::operator&& (const Schedule other) const {
+  Schedule toReturn(problem);
+  std::random_device r;
+  std::default_random_engine e(r());
+  std::uniform_int_distribution<int> uniform_dist(0,1);
+  for(int j=0; j<problem.getJobCount(); j++)
+    if(uniform_dist(e)) toReturn.priorities[j]=priorities[j];
+    else toReturn.priorities[j]=other.priorities[j];
+  return toReturn;
+}
