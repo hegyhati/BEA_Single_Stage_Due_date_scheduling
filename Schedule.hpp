@@ -7,7 +7,10 @@
     private:
       double* priorities;
       void localsearch(int job);
+      void newpriority(int job, double change);
     public:
+      static int localPoolSize;
+      static double mutationRange;
       const Problem& problem;
       Schedule(const Problem& problem);
       ~Schedule();

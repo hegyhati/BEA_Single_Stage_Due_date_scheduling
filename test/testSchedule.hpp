@@ -14,5 +14,5 @@ void printSchedule(const Schedule& schedule){
       cout<<" "<<itj.second<<"("<<itj.first<<")";
     cout<<"\n";
   }
-  cout<<"Latenes: "<<schedule.getTotalLateness()<<"\n";
+  cout<<"Lateness: "<<schedule.getTotalLateness()<<"\n";
 }
