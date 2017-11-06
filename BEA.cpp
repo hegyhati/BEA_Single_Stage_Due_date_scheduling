@@ -1,5 +1,6 @@
 #include "BEA.hpp"
 
+#include <algorithm>
 #include <random>
 
 
@@ -8,65 +9,80 @@ int BEA::bestKeepCount=40;
 int BEA::crossoverCount=15;
 int BEA::newCount=20;
 
-BEA::BEA(const Problem& problem, int size) : problem(problem){
+BEA::BEA(const Problem* problem, int size) : problem(problem){
   populationSize=size;
-  std::list<Schedule> tmp;
+  std::vector<Schedule> tmp;
   for(int p=0; p<size; p++) tmp.push_back(Schedule(problem));
   for(auto it: tmp) {
     it.mutate();
-    population.insert( std::pair<double,Schedule>(it.getTotalLateness(),it));
-  }  
+  }
+  population.insert(population.end(), tmp.begin(), tmp.end());
 }
 
-std::list<double> BEA::getCurrentValues() const {
-  std::list<double> toReturn;
-  for(auto it: population) toReturn.push_back(it.first);
+std::vector<double> BEA::getCurrentValues() const {
+  std::vector<double> toReturn;
+  for(auto it: population) toReturn.push_back(it.getTotalLateness());
   return toReturn;
 }
 
-double BEA::getCurrentBestValue() const {return population.begin()->first;}
-Schedule BEA::getCurrentBestSolution() const {return population.begin()->second;}
+double BEA::getCurrentBestValue() const {
+  double best = population[0].getTotalLateness();
+  for(int i=1; i<population.size(); i++) {
+      double lateness = population[i].getTotalLateness();
+      if(lateness<best)
+        best=lateness;
+    }
+  return best;
+}
 
+Schedule BEA::getCurrentBestSolution() const {
+  int best=0;
+  double bestval=population[0].getTotalLateness();
+  for(int i=1; i<population.size(); i++) {
+      double lateness = population[i].getTotalLateness();
+      if(lateness<bestval) {
+        best=i;
+        bestval=lateness;
+      }
+    }
+  return population[best];
+}
 
 double BEA::evolve(){
   double oldbest=getCurrentBestValue();
-  std::map<double,Schedule> next_population;
+  std::vector<Schedule> next_population;
   
   // Mutate old ones
   for(auto it: population) {
-    it.second.mutate();
-    next_population.insert(std::pair<double,Schedule>(it.second.getTotalLateness(),it.second));
+    it.mutate();
   }
+  next_population.insert(next_population.end(), population.begin(), population.end());
   
   // Insert new random ones mutated
-  std::list<Schedule> tmp_new;
+  std::vector<Schedule> tmp_new;
   for(int p=0; p<newCount; p++) tmp_new.push_back(Schedule(problem));
   for(auto it: tmp_new) {
     it.mutate();
-    next_population.insert( std::pair<double,Schedule>(it.getTotalLateness(),it));
-  }  
+  }
+  next_population.insert(next_population.end(), tmp_new.begin(), tmp_new.end());
   
   // Do some crossovers
-  std::list<Schedule> tmp_crossover;
+  std::vector<Schedule> tmp_crossover;
   int parent1,parent2;
   std::random_device r;
   std::default_random_engine e(r());
   std::uniform_int_distribution<int> uniform_dist(0,next_population.size()-1);
-  std::map<double,Schedule>::iterator it1,it2;
-  
+
   for(int p=0; p<crossoverCount; p++) {
-    for(it1=next_population.begin(),parent1=uniform_dist(e);parent1;parent1--) it1++;
-    for(it2=next_population.begin(),parent2=uniform_dist(e);parent2;parent2--) it2++;
-    tmp_crossover.push_back((it1->second)&&(it2->second));
+    parent1=uniform_dist(e);
+    parent2=uniform_dist(e);
+    tmp_crossover.push_back(next_population[parent1]&&(next_population[parent2]));
+    tmp_crossover.back().mutate();
   }
-  
-  for(auto it: tmp_crossover) {
-    it.mutate();
-    next_population.insert( std::pair<double,Schedule>(it.getTotalLateness(),it));
-  }  
-  
-  
-  //Elitism  
+  next_population.insert(next_population.end(), tmp_crossover.begin(), tmp_crossover.end());
+
+  //Elitism
+  std::sort(next_population.begin(), next_population.end());
   population.clear();  
   int toSelect=populationSize;
   int remaining=next_population.size(); 
@@ -75,9 +91,9 @@ double BEA::evolve(){
   for(auto it=next_population.begin();toSelect;it++,remaining--){
     if (toSelect>=populationSize-bestKeepCount || toSelect==remaining 
       || uniform_dist_2(e) < toSelect * multiplier) {     
-      population.insert(std::pair<double,Schedule>(it->first,it->second));
+      population.push_back(*it);
       toSelect--;      
     }
-  }  
+  }
   return getCurrentBestValue()-oldbest;
 }

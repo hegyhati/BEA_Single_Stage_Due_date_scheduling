@@ -9,7 +9,7 @@
 
   void printSchedule(const Schedule& schedule){  
     map <int,map<double,int>> prodlist;
-    for(int j=0;j<schedule.problem.getJobCount(); j++)
+    for(int j=0;j<schedule.problem->getJobCount(); j++)
       prodlist[(int) schedule.getPriority(j)][schedule.getPriority(j)] = j;
     for(const auto& itu : prodlist){
       cout<<"U"<<itu.first<<":";

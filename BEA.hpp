@@ -3,13 +3,12 @@
   
   #include "Problem.hpp"
   #include "Schedule.hpp"
-  #include <list>
-  #include <map>
+  #include <vector>
   
   class BEA {
     private:
-      std::map<double,Schedule> population;
-      const Problem& problem;
+      std::vector<Schedule> population;
+      const Problem* problem;
       
     public:
       static int populationSize;
@@ -18,9 +17,9 @@
       static int newCount;
       
       
-      BEA(const Problem& problem, int size=populationSize);
+      BEA(const Problem* problem, int size=populationSize);
       double evolve();
-      std::list<double> getCurrentValues() const;
+      std::vector<double> getCurrentValues() const;
       double getCurrentBestValue() const;
       Schedule getCurrentBestSolution() const;
   };

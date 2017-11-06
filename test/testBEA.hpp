@@ -7,7 +7,7 @@
   #include <iostream>
   using namespace std;
 
-  void testBEA(const Problem& problem){  
+  void testBEA(const Problem* problem){
     BEA test(problem,100);
     int generation=0;
     do{

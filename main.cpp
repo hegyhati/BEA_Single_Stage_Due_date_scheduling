@@ -10,7 +10,7 @@
 
 int main(int argc, char** argv){
   if (argc==1) {
-    std::cout<<"./a.out inputfile [localpoolsize] [population] [besteep] [new] [crosover]\n";
+    std::cout<<argv[0]<<" inputfile [localpoolsize] [population] [bestkeep] [new] [crossover]\n";
   } else {
     Problem testProblem(argv[1]);
     printProblem(testProblem);
@@ -19,6 +19,6 @@ int main(int argc, char** argv){
     if(argc>4) BEA::bestKeepCount=atoi(argv[4]);
     if(argc>5) BEA::newCount=atoi(argv[5]);
     if(argc>6) BEA::crossoverCount=atoi(argv[6]);
-    testBEA(testProblem);
+    testBEA(&testProblem);
   }
 }
