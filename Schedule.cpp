@@ -3,7 +3,6 @@
 #include <random>
 #include <cmath>
 #include <algorithm>
-#include <map>
 
 
 int Schedule::localPoolSize=5;
@@ -72,15 +71,17 @@ void Schedule::newpriority(int job, double change) {
 
 double Schedule::calculateTotalLateness() const {
   double newlateness=0;
-  double finish;
-  std::map <int,std::map<double,int>> prodlist;
+  std::vector<std::vector<int>> prodlist(problem->getUnitCount());
   for(int j=0;j<problem->getJobCount(); j++)
-    prodlist[(int) priorities[j]][priorities[j]] = j;
-  for(const auto& itu : prodlist){
-    finish=0;
-    for (const auto& itj : prodlist[itu.first]){
-      finish+=problem->getProcTime(itj.second,itu.first);
-      newlateness+=std::max(0.0,finish-problem->getDeadline(itj.second));
+    prodlist[(int) priorities[j]].push_back(j);
+  for(int unit=0; unit<problem->getUnitCount(); unit++){
+    std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
+        return priorities[a]<priorities[b];
+      });
+    double finish=0;
+    for (const auto& itj : prodlist[unit]){
+      finish+=problem->getProcTime(itj,unit);
+      newlateness+=std::max(0.0,finish-problem->getDeadline(itj));
     }
   }
   return newlateness;
