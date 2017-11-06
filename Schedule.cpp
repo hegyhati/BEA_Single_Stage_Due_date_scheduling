@@ -79,9 +79,11 @@ double Schedule::calculateTotalLateness() const {
         return priorities[a]<priorities[b];
       });
     double finish=0;
-    for (const auto& itj : prodlist[unit]){
-      finish+=problem->getProcTime(itj,unit);
-      newlateness+=std::max(0.0,finish-problem->getDeadline(itj));
+    for (int j=0; j<prodlist[unit].size(); ++j){
+      if (j>0)
+        finish+=problem->getSetupTime(prodlist[unit][j-1],prodlist[unit][j]);
+      finish+=problem->getProcTime(prodlist[unit][j],unit);
+      newlateness+=std::max(0.0,finish-problem->getDeadline(prodlist[unit][j]));
     }
   }
   return newlateness;
