@@ -3,21 +3,27 @@
 
   #include "../Schedule.hpp"
 
+  #include <algorithm>
   #include <iostream>
-  #include <map>
+  #include <vector>
   using namespace std;
 
-  void printSchedule(const Schedule& schedule){  
-    map <int,map<double,int>> prodlist;
+  void printSchedule(Schedule schedule){
+    vector<vector<int>> prodlist(schedule.problem->getUnitCount());
     for(int j=0;j<schedule.problem->getJobCount(); j++)
-      prodlist[(int) schedule.getPriority(j)][schedule.getPriority(j)] = j;
-    for(const auto& itu : prodlist){
-      cout<<"U"<<itu.first<<":";
-      for (const auto& itj : prodlist[itu.first])
-        cout<<" "<<itj.second<<"("<<itj.first<<")";
+      prodlist[(int) schedule.getPriority(j)].push_back(j);
+    for(int unit=0; unit<schedule.problem->getUnitCount(); unit++){
+      if (prodlist[unit].empty())
+        continue;
+      sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
+          return schedule.getPriority(a)<schedule.getPriority(b);
+      });
+      cout<<"U"<<unit+1<<":";
+      for (const auto& itj : prodlist[unit])
+        cout<<" i"<<itj+1<<"("<<schedule.getPriority(itj)<<")";
       cout<<"\n";
     }
-    cout<<"Lateness: "<<schedule.getTotalLateness()<<"\n";
+    cout<<"Objective value: "<<schedule.getObjectiveValue()<<"\n";
   }
 
 #endif

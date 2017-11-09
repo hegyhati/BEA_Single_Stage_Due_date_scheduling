@@ -20,7 +20,7 @@
       BEA(const Problem* problem, int size=populationSize);
       double evolve();
       std::vector<double> getCurrentValues() const;
-      double getCurrentBestValue() const;
-      Schedule getCurrentBestSolution() const;
+      double getCurrentBestValue();
+      Schedule getCurrentBestSolution();
   };
 #endif

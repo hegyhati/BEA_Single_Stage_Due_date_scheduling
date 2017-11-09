@@ -21,25 +21,25 @@ BEA::BEA(const Problem* problem, int size) : problem(problem){
 
 std::vector<double> BEA::getCurrentValues() const {
   std::vector<double> toReturn;
-  for(auto it: population) toReturn.push_back(it.getTotalLateness());
+  for(auto it: population) toReturn.push_back(it.getObjectiveValue());
   return toReturn;
 }
 
-double BEA::getCurrentBestValue() const {
-  double best = population[0].getTotalLateness();
+double BEA::getCurrentBestValue() {
+  double best = population[0].getObjectiveValue();
   for(int i=1; i<population.size(); i++) {
-      double lateness = population[i].getTotalLateness();
+      double lateness = population[i].getObjectiveValue();
       if(lateness<best)
         best=lateness;
     }
   return best;
 }
 
-Schedule BEA::getCurrentBestSolution() const {
+Schedule BEA::getCurrentBestSolution() {
   int best=0;
-  double bestval=population[0].getTotalLateness();
+  double bestval=population[0].getObjectiveValue();
   for(int i=1; i<population.size(); i++) {
-      double lateness = population[i].getTotalLateness();
+      double lateness = population[i].getObjectiveValue();
       if(lateness<bestval) {
         best=i;
         bestval=lateness;

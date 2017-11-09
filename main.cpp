@@ -10,15 +10,17 @@
 
 int main(int argc, char** argv){
   if (argc==1) {
-    std::cout<<argv[0]<<" inputfile [localpoolsize] [population] [bestkeep] [new] [crossover]\n";
+    std::cout<<argv[0]<<" inputfile [maxiterations] [localpoolsize] [populationsize] [bestkeep] [new] [crossover]\n";
   } else {
-    Problem testProblem(argv[1]);
+    Problem testProblem(argv[1], Problem::TotalEarliness);
     printProblem(testProblem);
-    if(argc>2) Schedule::localPoolSize=atoi(argv[2]);
-    if(argc>3) BEA::populationSize=atoi(argv[3]);
-    if(argc>4) BEA::bestKeepCount=atoi(argv[4]);
-    if(argc>5) BEA::newCount=atoi(argv[5]);
-    if(argc>6) BEA::crossoverCount=atoi(argv[6]);
-    testBEA(&testProblem);
+    int iterations = 100;
+    if(argc>2) iterations=atoi(argv[2]);
+    if(argc>3) Schedule::localPoolSize=atoi(argv[3]);
+    if(argc>4) BEA::populationSize=atoi(argv[4]);
+    if(argc>5) BEA::bestKeepCount=atoi(argv[5]);
+    if(argc>6) BEA::newCount=atoi(argv[6]);
+    if(argc>7) BEA::crossoverCount=atoi(argv[7]);
+    testBEA(&testProblem, iterations);
   }
 }

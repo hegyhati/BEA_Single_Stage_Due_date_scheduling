@@ -9,7 +9,7 @@ int Schedule::localPoolSize=5;
 double Schedule::mutationRange=0.5;
 
 Schedule::Schedule(const Problem* problem) : problem(problem),
-  priorities(problem->getJobCount()), lateness(-1.) {
+  priorities(problem->getJobCount()), objective(-1.) {
   std::random_device r;
   std::default_random_engine e(r());
   std::uniform_real_distribution<double> uniform_dist(0,problem->getUnitCount());
@@ -21,39 +21,34 @@ Schedule::Schedule(const Problem* problem) : problem(problem),
   }
 }
 
-double Schedule::getTotalLateness() {
-  if (lateness == -1.) lateness = calculateTotalLateness();
-  return lateness;
-}
-
-double Schedule::getTotalLateness() const {
-  if (lateness == -1.) return calculateTotalLateness();
-  return lateness;
+double Schedule::getObjectiveValue() {
+  if (objective == -1.) objective = calculateObjectiveValue();
+  return objective;
 }
 
 void Schedule::localsearch(int job) {
   double old=priorities[job];
   double best=old;
-  double bestvalue=getTotalLateness();
+  double bestvalue=getObjectiveValue();
   std::random_device r;
   std::default_random_engine e(r());
   std::uniform_real_distribution<double> uniform_dist(-mutationRange,mutationRange);
   for (int l=0; l<localPoolSize; l++) {
     newpriority(job,uniform_dist(e));
-    double newvalue=getTotalLateness();
+    double newvalue=getObjectiveValue();
     if(newvalue<bestvalue){
       best=priorities[job];
       bestvalue=newvalue;
     }
     priorities[job]=old;
-    lateness = -1.;
+    objective = -1.;
   }
   priorities[job]=best;
-  lateness = bestvalue;
+  objective = bestvalue;
 }
 
 void Schedule::newpriority(int job, double change) {
-  lateness = -1.;
+  objective = -1.;
   priorities[job]+=change;
   if (priorities[job]<0) priorities[job]+=problem->getUnitCount();
   else if (priorities[job]>=problem->getUnitCount()) priorities[job]-=problem->getUnitCount();
@@ -66,27 +61,74 @@ void Schedule::newpriority(int job, double change) {
       priorities[job]+=1;
       if (priorities[job]>=problem->getUnitCount()) priorities[job]-=problem->getUnitCount();
     } while (!problem->getProcTime(job,(int) priorities[job]));
-  }
+    }
+}
+
+double Schedule::calculateObjectiveValue() const
+{
+  switch (problem->getObjective()) {
+    case Problem::TotalLateness:
+      return calculateTotalLateness();
+    case Problem::TotalEarliness:
+      return calculateTotalEarliness();
+    default:
+      return -1;
+    }
 }
 
 double Schedule::calculateTotalLateness() const {
-  double newlateness=0;
+  double lateness=0;
   std::vector<std::vector<int>> prodlist(problem->getUnitCount());
   for(int j=0;j<problem->getJobCount(); j++)
     prodlist[(int) priorities[j]].push_back(j);
   for(int unit=0; unit<problem->getUnitCount(); unit++){
     std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
         return priorities[a]<priorities[b];
-      });
+    });
     double finish=0;
     for (int j=0; j<prodlist[unit].size(); ++j){
-      if (j>0)
+      if (j>0){
         finish+=problem->getSetupTime(prodlist[unit][j-1],prodlist[unit][j]);
+      }
       finish+=problem->getProcTime(prodlist[unit][j],unit);
-      newlateness+=std::max(0.0,finish-problem->getDeadline(prodlist[unit][j]));
+      lateness+=std::max(0.0,finish-problem->getDeadline(prodlist[unit][j]));
     }
   }
-  return newlateness;
+  return lateness;
+}
+
+double Schedule::calculateTotalEarliness() const
+{
+  double earliness=0;
+  std::vector<std::vector<int>> prodlist(problem->getUnitCount());
+  for(int j=0;j<problem->getJobCount(); j++)
+    prodlist[(int) priorities[j]].push_back(j);
+  for(int unit=0; unit<problem->getUnitCount(); unit++){
+    if (prodlist[unit].empty())
+      continue;
+    std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
+        return priorities[a]<priorities[b];
+    });
+    double finish = problem->getDeadline(prodlist[unit].back());
+    for (int j=prodlist[unit].size()-1; j>=0; --j){
+      double jobEarliness=problem->getDeadline(prodlist[unit][j])-finish;
+      if (jobEarliness < 0) {
+        finish+=jobEarliness;
+      } else {
+        earliness+=jobEarliness;
+      }
+      //calculate latest possible finish time for job j-1
+      finish-=problem->getProcTime(prodlist[unit][j],unit);
+      if (j>0) {
+        finish-=problem->getSetupTime(prodlist[unit][j-1],prodlist[unit][j]);
+      }
+      if (finish<0) {
+        //schedule infeasible add infeasibility to obj value as a penalty
+        earliness += -finish;
+      }
+    }
+  }
+  return earliness;
 }
 
 void Schedule::mutate() {
@@ -110,5 +152,5 @@ Schedule Schedule::operator&& (const Schedule &other) const {
 
 bool Schedule::operator< (Schedule &other)
 {
-  return getTotalLateness() < other.getTotalLateness();
+  return getObjectiveValue() < other.getObjectiveValue();
 }
