@@ -4,7 +4,6 @@
 #include <cmath>
 #include <algorithm>
 
-
 unsigned int Schedule::localPoolSize=5;
 double Schedule::mutationRange=0.5;
 
@@ -53,15 +52,15 @@ void Schedule::newpriority(unsigned int job, double change) {
   priorities[job]+=change;
   if (priorities[job]<0) priorities[job]+=problem->getUnitCount();
   else if (priorities[job]>=problem->getUnitCount()) priorities[job]-=problem->getUnitCount();
-  if (!problem->getProcTime(job,(int) priorities[job])){
+  if (!problem->getProcTime(job,(unsigned int) priorities[job])){
     if (change<0) do {
       priorities[job]-=1;
       if (priorities[job]<0) priorities[job]+=problem->getUnitCount();
-    } while (!problem->getProcTime(job,(int) priorities[job]));
+    } while (!problem->getProcTime(job,(unsigned int) priorities[job]));
     else do {
       priorities[job]+=1;
       if (priorities[job]>=problem->getUnitCount()) priorities[job]-=problem->getUnitCount();
-    } while (!problem->getProcTime(job,(int) priorities[job]));
+    } while (!problem->getProcTime(job,(unsigned int) priorities[job]));
     }
 }
 
@@ -79,11 +78,11 @@ double Schedule::calculateObjectiveValue() const
 
 double Schedule::calculateTotalLateness() const {
   double lateness=0;
-  std::vector<std::vector<int>> prodlist(problem->getUnitCount());
+  std::vector<std::vector<unsigned int>> prodlist(problem->getUnitCount());
   for(unsigned int j=0;j<problem->getJobCount(); j++)
     prodlist[(int) priorities[j]].push_back(j);
   for(unsigned int unit=0; unit<problem->getUnitCount(); unit++){
-    std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
+    std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](unsigned int a, unsigned int b) {
         return priorities[a]<priorities[b];
     });
     double finish=0;
@@ -101,17 +100,17 @@ double Schedule::calculateTotalLateness() const {
 double Schedule::calculateTotalEarliness() const
 {
   double earliness=0;
-  std::vector<std::vector<int>> prodlist(problem->getUnitCount());
+  std::vector<std::vector<unsigned int>> prodlist(problem->getUnitCount());
   for(unsigned int j=0;j<problem->getJobCount(); j++)
-    prodlist[(int) priorities[j]].push_back(j);
+    prodlist[(unsigned int) priorities[j]].push_back(j);
   for(unsigned int unit=0; unit<problem->getUnitCount(); unit++){
     if (prodlist[unit].empty())
       continue;
-    std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
+    std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](unsigned int a, unsigned int b) {
         return priorities[a]<priorities[b];
     });
     double finish = problem->getDeadline(prodlist[unit].back());
-    for (unsigned int j=prodlist[unit].size()-1; j>=0; --j){
+    for (int j=prodlist[unit].size()-1; j>=0; --j){
       double jobEarliness=problem->getDeadline(prodlist[unit][j])-finish;
       if (jobEarliness < 0) {
         finish+=jobEarliness;
@@ -144,7 +143,7 @@ Schedule Schedule::operator&& (const Schedule &other) const {
   Schedule toReturn(problem);
   std::random_device r;
   std::default_random_engine e(r());
-  std::uniform_int_distribution<int> uniform_dist(0,1);
+  std::uniform_int_distribution<unsigned int> uniform_dist(0,1);
   for(unsigned int j=0; j<problem->getJobCount(); j++)
     if(uniform_dist(e)) toReturn.priorities[j]=priorities[j];
     else toReturn.priorities[j]=other.priorities[j];
