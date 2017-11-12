@@ -5,16 +5,17 @@
 #include <algorithm>
 
 
-int Schedule::localPoolSize=5;
+unsigned int Schedule::localPoolSize=5;
 double Schedule::mutationRange=0.5;
 
-Schedule::Schedule(const Problem* problem) : problem(problem),
-  priorities(problem->getJobCount()), objective(-1.) {
+Schedule::Schedule(const Problem* problem) :
+  priorities(problem->getJobCount()), objective(-1.),
+  problem(problem) {
   std::random_device r;
   std::default_random_engine e(r());
   std::uniform_real_distribution<double> uniform_dist(0,problem->getUnitCount());
   
-  for (int j=0; j<problem->getJobCount(); j++) {
+  for (unsigned int j=0; j<problem->getJobCount(); j++) {
     do {
       priorities[j]=uniform_dist(e);
     } while (! problem->getProcTime(j, (int) priorities[j]));
@@ -26,14 +27,14 @@ double Schedule::getObjectiveValue() {
   return objective;
 }
 
-void Schedule::localsearch(int job) {
+void Schedule::localsearch(unsigned int job) {
   double old=priorities[job];
   double best=old;
   double bestvalue=getObjectiveValue();
   std::random_device r;
   std::default_random_engine e(r());
   std::uniform_real_distribution<double> uniform_dist(-mutationRange,mutationRange);
-  for (int l=0; l<localPoolSize; l++) {
+  for (unsigned int l=0; l<localPoolSize; l++) {
     newpriority(job,uniform_dist(e));
     double newvalue=getObjectiveValue();
     if(newvalue<bestvalue){
@@ -47,7 +48,7 @@ void Schedule::localsearch(int job) {
   objective = bestvalue;
 }
 
-void Schedule::newpriority(int job, double change) {
+void Schedule::newpriority(unsigned int job, double change) {
   objective = -1.;
   priorities[job]+=change;
   if (priorities[job]<0) priorities[job]+=problem->getUnitCount();
@@ -79,14 +80,14 @@ double Schedule::calculateObjectiveValue() const
 double Schedule::calculateTotalLateness() const {
   double lateness=0;
   std::vector<std::vector<int>> prodlist(problem->getUnitCount());
-  for(int j=0;j<problem->getJobCount(); j++)
+  for(unsigned int j=0;j<problem->getJobCount(); j++)
     prodlist[(int) priorities[j]].push_back(j);
-  for(int unit=0; unit<problem->getUnitCount(); unit++){
+  for(unsigned int unit=0; unit<problem->getUnitCount(); unit++){
     std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
         return priorities[a]<priorities[b];
     });
     double finish=0;
-    for (int j=0; j<prodlist[unit].size(); ++j){
+    for (unsigned int j=0; j<prodlist[unit].size(); ++j){
       if (j>0){
         finish+=problem->getSetupTime(prodlist[unit][j-1],prodlist[unit][j]);
       }
@@ -101,16 +102,16 @@ double Schedule::calculateTotalEarliness() const
 {
   double earliness=0;
   std::vector<std::vector<int>> prodlist(problem->getUnitCount());
-  for(int j=0;j<problem->getJobCount(); j++)
+  for(unsigned int j=0;j<problem->getJobCount(); j++)
     prodlist[(int) priorities[j]].push_back(j);
-  for(int unit=0; unit<problem->getUnitCount(); unit++){
+  for(unsigned int unit=0; unit<problem->getUnitCount(); unit++){
     if (prodlist[unit].empty())
       continue;
     std::sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {
         return priorities[a]<priorities[b];
     });
     double finish = problem->getDeadline(prodlist[unit].back());
-    for (int j=prodlist[unit].size()-1; j>=0; --j){
+    for (unsigned int j=prodlist[unit].size()-1; j>=0; --j){
       double jobEarliness=problem->getDeadline(prodlist[unit][j])-finish;
       if (jobEarliness < 0) {
         finish+=jobEarliness;
@@ -132,11 +133,11 @@ double Schedule::calculateTotalEarliness() const
 }
 
 void Schedule::mutate() {
-  for (int j=0; j<problem->getJobCount(); j++)
+  for (unsigned int j=0; j<problem->getJobCount(); j++)
     localsearch(j);  
 }
 
-double Schedule::getPriority(int job) const {return priorities[job%problem->getJobCount()];}
+double Schedule::getPriority(unsigned int job) const {return priorities[job%problem->getJobCount()];}
 
 
 Schedule Schedule::operator&& (const Schedule &other) const {
@@ -144,7 +145,7 @@ Schedule Schedule::operator&& (const Schedule &other) const {
   std::random_device r;
   std::default_random_engine e(r());
   std::uniform_int_distribution<int> uniform_dist(0,1);
-  for(int j=0; j<problem->getJobCount(); j++)
+  for(unsigned int j=0; j<problem->getJobCount(); j++)
     if(uniform_dist(e)) toReturn.priorities[j]=priorities[j];
     else toReturn.priorities[j]=other.priorities[j];
   return toReturn;

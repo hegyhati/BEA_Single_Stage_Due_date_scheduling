@@ -11,13 +11,13 @@
       const Problem* problem;
       
     public:
-      static int populationSize;
-      static int bestKeepCount;
-      static int crossoverCount;
-      static int newCount;
+      static unsigned int populationSize;
+      static unsigned int bestKeepCount;
+      static unsigned int crossoverCount;
+      static unsigned int newCount;
       
       
-      BEA(const Problem* problem, int size=populationSize);
+      BEA(const Problem* problem, unsigned int size=populationSize);
       double evolve();
       std::vector<double> getCurrentValues() const;
       double getCurrentBestValue();

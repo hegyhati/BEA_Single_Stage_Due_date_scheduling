@@ -9,10 +9,10 @@
   using namespace std;
 
   void printSchedule(Schedule schedule){
-    vector<vector<int>> prodlist(schedule.problem->getUnitCount());
-    for(int j=0;j<schedule.problem->getJobCount(); j++)
-      prodlist[(int) schedule.getPriority(j)].push_back(j);
-    for(int unit=0; unit<schedule.problem->getUnitCount(); unit++){
+    vector<vector<unsigned int>> prodlist(schedule.problem->getUnitCount());
+    for(unsigned int j=0;j<schedule.problem->getJobCount(); j++)
+      prodlist[(unsigned int) schedule.getPriority(j)].push_back(j);
+    for(unsigned int unit=0; unit<schedule.problem->getUnitCount(); unit++){
       if (prodlist[unit].empty())
         continue;
       sort(prodlist[unit].begin(), prodlist[unit].end(), [&](int a, int b) {

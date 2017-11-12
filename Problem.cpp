@@ -13,15 +13,15 @@ Problem::Problem(std::string filename, ObjectiveFunction obj): objFunct(obj){
     procTime = new double*[nJobs];
     setupTime = new double*[nJobs];
     
-    for (int j=0; j<nJobs; j++){
+    for (unsigned int j=0; j<nJobs; j++){
       inputfile>>deadline[j];
       procTime[j]=new double[nUnits];
-      for (int u=0; u<nUnits; u++)
+      for (unsigned int u=0; u<nUnits; u++)
         inputfile>>procTime[j][u];
     }
-    for (int j=0; j<nJobs; j++){
+    for (unsigned int j=0; j<nJobs; j++){
       setupTime[j]=new double[nJobs];
-      for (int k=0; k<nJobs; k++){
+      for (unsigned int k=0; k<nJobs; k++){
         double setup;
         inputfile>>setup;
         if(setup<0) setupTime[j][k]=std::numeric_limits<double>::infinity();
@@ -39,14 +39,14 @@ Problem::Problem(std::string filename, ObjectiveFunction obj): objFunct(obj){
 Problem::~Problem(){
   if (nJobs){
     delete [] deadline;
-    for (int j=0; j<nJobs; j++)
+    for (unsigned int j=0; j<nJobs; j++)
       delete [] procTime[j];
     delete [] procTime;
   }
 }
 
-int Problem::getJobCount() const {return nJobs;}
-int Problem::getUnitCount() const {return nUnits;}
+unsigned int Problem::getJobCount() const {return nJobs;}
+unsigned int Problem::getUnitCount() const {return nUnits;}
 double Problem::getProcTime(int job, int unit) const {return procTime[job%nJobs][unit%nUnits];}
 
 double Problem::getSetupTime(int job1, int job2) const {return setupTime[job1%nJobs][job2%nJobs];}
