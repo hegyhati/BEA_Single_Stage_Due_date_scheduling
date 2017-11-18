@@ -50,33 +50,28 @@ Schedule BEA::getCurrentBestSolution() {
 
 double BEA::evolve(){
   double oldbest=getCurrentBestValue();
-  std::vector<Schedule> next_population;
   
-  // Mutate old ones
-  for(auto it: population) {
-    it.mutate();
+  // Generate new random solutions and add to population
+  for(unsigned int p=0; p<newCount; p++) population.push_back(Schedule(problem));
+
+  // Mutate population
+  for(unsigned int p=0; p<populationSize; p++) {
+    population[p].mutate();
   }
-  next_population.insert(next_population.end(), population.begin(), population.end());
-  
-  // Insert new random ones mutated
-  std::vector<Schedule> tmp_new;
-  for(unsigned int p=0; p<newCount; p++) tmp_new.push_back(Schedule(problem));
-  for(auto it: tmp_new) {
-    it.mutate();
-  }
-  next_population.insert(next_population.end(), tmp_new.begin(), tmp_new.end());
-  
+
+  std::vector<Schedule> next_population(population);
+
   // Do some crossovers
   std::vector<Schedule> tmp_crossover;
   int parent1,parent2;
   std::random_device r;
   std::default_random_engine e(r());
-  std::uniform_int_distribution<int> uniform_dist(0,next_population.size()-1);
+  std::uniform_int_distribution<int> uniform_dist(0,population.size()-1);
 
   for(unsigned int p=0; p<crossoverCount; p++) {
     parent1=uniform_dist(e);
     parent2=uniform_dist(e);
-    tmp_crossover.push_back(next_population[parent1]&&(next_population[parent2]));
+    tmp_crossover.push_back(population[parent1]&&(population[parent2]));
     tmp_crossover.back().mutate();
   }
   next_population.insert(next_population.end(), tmp_crossover.begin(), tmp_crossover.end());
