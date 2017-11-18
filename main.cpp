@@ -9,8 +9,8 @@
 
 
 int main(int argc, char** argv){
-  if (argc==1) {
-    std::cout<<argv[0]<<" inputfile [maxiterations] [localpoolsize] [populationsize] [bestkeep] [new] [crossover]\n";
+  if (argc==1 || argc > 9) {
+    std::cout<<argv[0]<<" inputfile [maxiterations] [localpoolsize] [populationsize] [bestkeep] [new] [crossover] [timelimit]\n";
   } else {
     Problem testProblem(argv[1], Problem::TotalEarliness);
 //    printProblem(testProblem);
@@ -21,6 +21,13 @@ int main(int argc, char** argv){
     if(argc>5) BEA::bestKeepCount=atoi(argv[5]);
     if(argc>6) BEA::newCount=atoi(argv[6]);
     if(argc>7) BEA::crossoverCount=atoi(argv[7]);
-    testBEA(&testProblem, iterations);
+    printf("Solving %s\nParameters: maxiterations=%d localpoolsize=%d populationsize=%d bestkeep=%d new=%d crossover=%d\n",
+           argv[1], iterations, Schedule::localPoolSize, BEA::populationSize, BEA::bestKeepCount, BEA::newCount, BEA::crossoverCount);
+    double timelimit = numeric_limits<double>::max();
+    if(argc>8) {
+      timelimit=atof(argv[8]);
+      printf("Time limit is %g seconds.\n", timelimit);
+    }
+    testBEA(&testProblem, iterations, timelimit);
   }
 }
