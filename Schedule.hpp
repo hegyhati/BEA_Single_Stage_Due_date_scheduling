@@ -24,6 +24,8 @@
 
       double getObjectiveValue();
       void mutate();
+      void loadPriorities(const std::vector<double> &priorities);
+
       double getPriority(unsigned int job) const;
       Schedule operator&& (const Schedule& other) const;
       bool operator< (Schedule& other);

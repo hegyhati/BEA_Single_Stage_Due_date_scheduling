@@ -22,12 +22,11 @@ Problem::Problem(std::string filename, ObjectiveFunction obj): objFunct(obj){
     for (unsigned int j=0; j<nJobs; j++){
       setupTime[j]=new double[nJobs];
       for (unsigned int k=0; k<nJobs; k++){
-        double setup;
-        inputfile>>setup;
-        if(setup<0) setupTime[j][k]=std::numeric_limits<double>::infinity();
-        else setupTime[j][k]=setup;
+        inputfile>>setupTime[j][k];
+        if(setupTime[j][k]<0) setupTime[j][k]=std::numeric_limits<double>::infinity();
       }
     }
+    inputfile.close();
   } else {
     nJobs=nUnits=0;
     deadline=NULL;
@@ -39,9 +38,12 @@ Problem::Problem(std::string filename, ObjectiveFunction obj): objFunct(obj){
 Problem::~Problem(){
   if (nJobs){
     delete [] deadline;
-    for (unsigned int j=0; j<nJobs; j++)
+    for (unsigned int j=0; j<nJobs; j++) {
       delete [] procTime[j];
+      delete [] setupTime[j];
+    }
     delete [] procTime;
+    delete [] setupTime;
   }
 }
 

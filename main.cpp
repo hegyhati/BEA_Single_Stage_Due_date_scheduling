@@ -13,7 +13,7 @@ int main(int argc, char** argv){
     std::cout<<argv[0]<<" inputfile [maxiterations] [localpoolsize] [populationsize] [bestkeep] [new] [crossover]\n";
   } else {
     Problem testProblem(argv[1], Problem::TotalEarliness);
-    printProblem(testProblem);
+//    printProblem(testProblem);
     int iterations = 100;
     if(argc>2) iterations=atoi(argv[2]);
     if(argc>3) Schedule::localPoolSize=atoi(argv[3]);

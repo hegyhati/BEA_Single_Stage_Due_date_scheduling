@@ -136,8 +136,9 @@ void Schedule::mutate() {
     localsearch(j);  
 }
 
-double Schedule::getPriority(unsigned int job) const {return priorities[job%problem->getJobCount()];}
+void Schedule::loadPriorities(const std::vector<double> &priorities) {this->priorities = priorities;}
 
+double Schedule::getPriority(unsigned int job) const {return priorities[job%problem->getJobCount()];}
 
 Schedule Schedule::operator&& (const Schedule &other) const {
   Schedule toReturn(problem);
