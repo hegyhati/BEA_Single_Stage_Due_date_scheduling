@@ -13,10 +13,10 @@
                             2.6, 2.4, 2.1, 2.8, 2.2} );                       //i21-25
 
   void testBEA(const Problem* problem, int maxIterations, double timeLimit){
+    auto start = chrono::high_resolution_clock::now();
     BEA test(problem);
     double currentBest = -1;
     int generation=0, lastImprovement=0;
-    auto start = chrono::high_resolution_clock::now();
     double bestTime = 0;
     chrono::duration<double> elapsed;
     do{
